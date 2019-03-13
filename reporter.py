@@ -29,6 +29,7 @@ def top_authors():
                 from articles, log
                 where path = ('/article/' || slug)
                 group by author
+                limit 10
                 """
 
         cursor.execute("""
@@ -69,21 +70,14 @@ def problem_days():
                                 daily_errors::integer
                                 and daily.day = errors.day
                         order by daily.day
-                        limit 3
                         """.format(daily_logs, error_logs)
 
         cursor.execute(logs)
-
-        for date in cursor:
-                print str(date[0]) + ' - ' + str(date[2]/date[1]) + '% errors'
+        report = cursor.fetchall()
         db.close()
 
-        # where time between timestamp '2016-07-01 00:00:00 +00'
-        #                and timestamp '2016-07-02 00:00:00 +00'
-        # print('Days with request failures over 1%: {}'.format(days))
-        # timestamps = [("'2016-07-01 00:00:00 +00' and timestamp '2016-07-02
-        # 00:00:00 +00'","")]
-        # pg2_extras.execute_values(cursor, daily_logs, timestamps)
+        for date in report:
+                print str(date[0]) + ' - ' + str(date[2]/date[1]) + '% errors'
 
 
 print
