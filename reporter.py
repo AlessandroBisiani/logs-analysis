@@ -4,6 +4,10 @@ import psycopg2
 
 
 def connect(db_name='news'):
+    """
+     Connect to a database named in params (deafult is 'news') and return a
+     connection object and cursor, in that order.
+    """
     try:
         db = psycopg2.connect(dbname="{}".format(db_name))
         cursor = db.cursor()
@@ -13,10 +17,11 @@ def connect(db_name='news'):
 
 
 # 1. What are the most popular three articles of all time?
-# Return a string with the top three articles by views each on a new line
-def top_three_articles():
+def top_three_articles(cursor):
+    """
+     Return a string with the top three articles by views each on a new line.
+    """
     top_articles = 'No articles found'
-    db, cursor = connect('news')
     try:
         cursor.execute("""select title, count(*) as hits
             from articles, log
@@ -26,7 +31,6 @@ def top_three_articles():
             limit 3
             """)
         article_views = cursor.fetchall()
-        db.close()
         # If no articles were found, return
         if len(article_views) <= 0:
             return article_views
@@ -44,10 +48,11 @@ def top_three_articles():
 
 
 # 2. Who are the most popular article authors of all time?
-# Return a string with each author and their number of views on a new line.
-def top_authors():
+def top_authors(cursor):
+    """
+     Return a string with each author and their number of views on a new line.
+    """
     top_auth = 'No authors found.'
-    db, cursor = connect('news')
     try:
         cursor.execute("""
             select name, hits
@@ -57,7 +62,6 @@ def top_authors():
             order by hits desc""")
 
         authors = cursor.fetchall()
-        db.close()
         # If no authors were found, return
         if len(authors) <= 0:
             return top_auth
@@ -74,12 +78,12 @@ def top_authors():
 
 
 # 3. On which days did more than 1% of requests lead to errors?
-# Return a string with the day and percentage of errors.
-def problem_days():
+def problem_days(cursor):
+    """
+     Return a string with the day and percentage of errors.
+    """
     days = 'None found'
     try:
-        db, cursor = connect('news')
-
         logs = """select daily.day,
             daily_total::integer/100,
             daily_errors::integer,
@@ -93,7 +97,6 @@ def problem_days():
 
         cursor.execute(logs)
         report = cursor.fetchall()
-        db.close()
         # If no days were found, return
         if len(report) <= 0:
             return days
@@ -104,18 +107,26 @@ def problem_days():
 
     # If the query returns any days, return the results.
     else:
+        day_str = '    {0} - {1}% of {2} were errors\r\n'
         days = 'Days when over 1% of requests lead to errors: \r\n'
         for date in report:
             percentage_error = round((date[2]/date[1]), 2)
-            days += '    {0} - {1}% of {2} were errors\r\n'.format(
-                                                            date[0],
-                                                            percentage_error,
-                                                            date[3])
+            days += day_str.format(date[0].strftime('%d of %B %Y'),
+                                   percentage_error,
+                                   date[3])
         return days
 
 
 if __name__ == '__main__':
-    print('\r\n{0}{3}\r\n{1}{3}\r\n{2}{3}\r\n'.format(top_three_articles(),
-                                                      top_authors(),
-                                                      problem_days(),
+    db, cursor = connect('news')
+
+    articles = top_three_articles(cursor)
+    auth = top_authors(cursor)
+    days = problem_days(cursor)
+
+    db.close()
+
+    print('\r\n{0}{3}\r\n{1}{3}\r\n{2}{3}\r\n'.format(articles,
+                                                      auth,
+                                                      days,
                                                       ('='*70)))
