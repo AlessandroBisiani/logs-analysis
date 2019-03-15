@@ -3,11 +3,13 @@ reporter.py performs a simple analysis of the information contained in the news 
 
 
 ## Use
-#### For this project you will need the following. Download everything and install Vagrant and VirtualBox 5.1:
+Once these steps are complete, you can import the module or run it with `python3 reporter.py` from within the VM.
+#### You will need the following:
+Download everything and install Vagrant and VirtualBox 5.1.
 1. Vagrant: [download](https://www.vagrantup.com/downloads.html)
 2. VirtualBox 5.1 for your system: [download](https://www.virtualbox.org/wiki/Download_Old_Builds_5_1) and install
 3. A clone of the VM for this project: [the repo](https://github.com/udacity/fullstack-nanodegree-vm). Fork the repository, then clone it to a local directory.
-4. The data database: [download](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip)
+4. The database data: [download](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip)
 
 #### Setup
 1. Once everything is downloaded and Vagrant and VirtualBox are installed, `cd` to your clone of the VM (#3 above). If you forked and cloned it, the directory should be _.../FSND-Virtual-Machine/_.
@@ -18,7 +20,15 @@ reporter.py performs a simple analysis of the information contained in the news 
 6. To load the data for this project, execute `psql -d news- newsdata.sql` from within _/vagrant/_ on your VM.
 
 
-Once these steps are complete, you can run the reporter script with `python3 reporter.py` from within the VM.
+### The API provides:
+* `connect(db_name='news')`
+Connect to a named database and return `connection_object, cursor`
+* `top_three_articles(cursor)`
+Returns a _string_, answering: __What are the most popular three articles of all time?__
+* `top_authors(cursor)`
+Returns a _string_, answering: __Who are the most popular article authors of all time?__
+* `problem_days(cursor)`
+Returns a _string_, answering: __On which days did more than 1% of requests lead to errors?__
 
 
 ## Output
@@ -41,12 +51,12 @@ Top authors by article views:
     Markoff Chaney - 84557 views
 \======================================================================
 Days when over 1% of requests lead to errors: 
-    2.26% of 55907 were errors
+    17 of July 2016 - 2.26% of 55907 were errors
 \======================================================================
 </pre>
 
 ## Design
-Each query is performed by a function. The function creates a connection and cursor, immediately uses them, closes the connection, and iterates over the results to print.
+Each function takes a cursor, performs a query, and returns a string with the formatted result. A top level check for whether the module is being run as the main module calls all three functions and prints the formatted results. 
 
 ##### The SQL: 
 1. A simple join and select, by concatenating the content of _articles.slug_ and "/articles/", in order to match that to _log.path_.
